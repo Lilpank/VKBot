@@ -22,16 +22,15 @@ def save_userid_in_db(chat_id, user_id):
     if chat_id not in users:
         users[chat_id] = [user_id]
         db.insert_value_into_table(f'''INSERT INTO participants(id_chat, user_id) values('{chat_id}', '{user_id}')''')
-        chat_bot_class_dict[chat_id].sender(f'user_id: {user_id} insert into database')
+        logging.debug(f'user_id: {user_id} insert into database')
     elif user_id not in users[chat_id]:
         users[chat_id].append(user_id)
         db.insert_value_into_table(f'''INSERT INTO participants(id_chat, user_id) values('{chat_id}', '{user_id}')''')
-        chat_bot_class_dict[chat_id].sender(f'user_id: {user_id} insert into database')
+        logging.debug(f'user_id: {user_id} insert into database')
     else:
-        chat_bot_class_dict[chat_id].sender(f'user_id: {user_id} exist in dict')
+        logging.debug(f'user_id: {user_id} exist in dict')
 
-    logging.info(f"bot: {chat_bot_class_dict}, chat_id: {chat_id}")
-    logging.info(f'users list: {users}')
+    logging.debug(f'users list: {users}')
 
 
 def choice_slave_from_db(bot, chat_id):
@@ -44,6 +43,8 @@ def choice_slave_from_db(bot, chat_id):
             f"select count from participants where user_id='{user_id}' and id_chat='{chat_id}' limit 1")[0][0] + 1
 
         db.update_data(f"update participants set count='{count}' where user_id='{user_id}' and id_chat='{chat_id}'")
+
+        logging.debug(f"update count in table participants with user_id={user_id}, count={count}")
         # bot.sender(f'@id{user_id}, отличного дня! ')
 
 
