@@ -1,6 +1,6 @@
 import psycopg2
 import logging
-from app.config import USER, PASSWORD, HOST, PORT, DATABASE
+from config import USER, PASSWORD, HOST, PORT, DATABASE
 
 logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.INFO,
                     datefmt="%H:%M:%S")

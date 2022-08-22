@@ -3,17 +3,18 @@ import threading
 import time
 import random
 
-from app.config import VK_SESSION
+from database import Database
+from config import VK_SESSION
 
 logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.INFO,
                     datefmt="%H:%M:%S")
 
 
 class VkBot:
-    def __init__(self, chat_id, db):
+    def __init__(self, chat_id):
         print("\nСоздан объект бота!")
         self.chat_id = chat_id
-        self.db = db
+        self.db = Database()
         self.db.insert_value_into_table(f"INSERT INTO chats(id_chat) values('{chat_id}')"
                                         f" ON CONFLICT (id_chat) "
                                         f"DO NOTHING ")
