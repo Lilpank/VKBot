@@ -26,7 +26,7 @@ def main():
                         logging.error(err)
                 if event.from_chat:
                     msg = event.object.message['text'].lower()
-                    logging.info(f'Пользователь написал - {msg}')
+                    logging.info(f'User send info - {msg}')
 
                     user_id = event.object.message['from_id']
                     chat_bot_class_dict[chat_id].save_userid_in_db(user_id)

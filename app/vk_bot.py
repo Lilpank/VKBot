@@ -12,7 +12,7 @@ logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.INFO,
 
 class VkBot:
     def __init__(self, chat_id):
-        print("\nСоздан объект бота!")
+        logging.info("Create the vk-bot!")
         self.chat_id = chat_id
         self.db = Database()
         self.db.insert_value_into_table(f"INSERT INTO chats(id_chat) values('{chat_id}')"
@@ -36,11 +36,11 @@ class VkBot:
             self.users.append(user_id)
             self.db.insert_value_into_table(
                 f"INSERT INTO participants(id_chat, user_id) values('{self.chat_id}', '{user_id}') ")
-            logging.debug(f'user_id: {user_id} insert into database')
+            logging.info(f'user_id: {user_id} insert into database')
         else:
             logging.info(f'user_id: {user_id} exists in db')
 
-        logging.debug(f'users list: {self.users}')
+        logging.info(f'users list: {self.users}')
 
     def choice_slave_from_db(self, chat_id):
         while True:
