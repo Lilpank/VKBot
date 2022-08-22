@@ -14,8 +14,13 @@ class VkBot:
         print("\nСоздан объект бота!")
         self.chat_id = chat_id
         self.db = db
-        self.users = list()
-        self.db.insert_value_into_table(f'''INSERT INTO chats(id_chat) values('{chat_id}')''')
+        self.db.insert_value_into_table(f"INSERT INTO chats(id_chat) values('{chat_id}')"
+                                        f" ON CONFLICT (id_chat) "
+                                        f"DO NOTHING ")
+
+        self.users = self.db.select_data(f"Select distinct user_id from participants where id_chat = {chat_id}")
+        if len(self.users) != 0:
+            self.users = self.users[0]
         thread = threading.Thread(target=self.choice_slave_from_db, args=(self.chat_id,))
         thread.start()
 
@@ -29,7 +34,7 @@ class VkBot:
         if user_id not in self.users:
             self.users.append(user_id)
             self.db.insert_value_into_table(
-                f'''INSERT INTO participants(id_chat, user_id) values('{self.chat_id}', '{user_id}')''')
+                f"INSERT INTO participants(id_chat, user_id) values('{self.chat_id}', '{user_id}') ")
             logging.debug(f'user_id: {user_id} insert into database')
         else:
             logging.info(f'user_id: {user_id} exists in db')
@@ -38,7 +43,7 @@ class VkBot:
 
     def choice_slave_from_db(self, chat_id):
         while True:
-            time.sleep(200)
+            time.sleep(500)
 
             users_id = self.db.select_data(f"select distinct user_id from participants where id_chat='{chat_id}'")
             user_id = random.choice(users_id)[0]
@@ -49,5 +54,4 @@ class VkBot:
                 f"update participants set count='{count}' where user_id='{user_id}' and id_chat='{chat_id}'")
 
             logging.debug(f"update count in table participants with user_id={user_id}, count={count}")
-
-            # self.sender(f'@id{user_id}, отличного дня! ')
+            self.sender(f'@id{user_id}, отличного дня! ')

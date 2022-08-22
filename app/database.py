@@ -9,11 +9,11 @@ logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.INFO,
 class Database:
     create_table_chats = '''CREATE TABLE IF NOT EXISTS chats
                                      (ID SERIAL PRIMARY KEY     NOT NULL,
-                                     id_chat         TEXT    NOT NULL); '''
+                                     id_chat         TEXT       UNIQUE); '''
 
     create_table_participants = '''CREATE TABLE IF NOT EXISTS participants
                                          (ID SERIAL PRIMARY KEY  NOT NULL,
-                                         id_chat         INT    NOT NULL,
+                                         id_chat         INT     NOT NULL,
                                          user_id         INT     NOT NULL,
                                          count           INT     DEFAULT 0
                                          ); '''
@@ -41,9 +41,11 @@ class Database:
 
         raise Exception("Не удалось выполнить sql запрос")
 
-    def update_data(self, query):
+    def update_data(self, query: str):
+        # if query is not None:
         self.cursor.execute(query)
         self.connection.commit()
+        # raise Exception("Не удалось выполнить update запрос")
 
-    def connection_close(self):
+    def connection_close(self) -> None:
         self.cursor.close(), self.connection.close()
