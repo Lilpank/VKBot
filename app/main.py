@@ -1,16 +1,13 @@
 import logging
-
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
-
+from chat import Chat
 from config import VK_SESSION, ID_BOT
-from database import Database
-from vk_bot import VkBot
 
 logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.INFO,
                     datefmt="%H:%M:%S")
 longpoll = VkBotLongPoll(VK_SESSION, ID_BOT)
 
-chat_bot_class_dict = {}
+rooms_dict = {}
 
 
 def main():
@@ -19,9 +16,10 @@ def main():
             if event.type == VkBotEventType.MESSAGE_NEW:
                 chat_id = event.chat_id
 
-                if chat_id not in chat_bot_class_dict:
+                if chat_id not in rooms_dict:
                     try:
-                        chat_bot_class_dict[chat_id] = VkBot(event.chat_id)
+                        rooms_dict[chat_id] = Chat(event.chat_id)
+                        logging.info(f"Create the room with chat_id: {chat_id}")
                     except Exception as err:
                         logging.error(err)
                 if event.from_chat:
@@ -29,7 +27,7 @@ def main():
                     logging.info(f'User send info - {msg}')
 
                     user_id = event.object.message['from_id']
-                    chat_bot_class_dict[chat_id].save_userid_in_db(user_id)
+                    rooms_dict[chat_id].save_userid_in_db(user_id)
     except Exception as error:
         logging.error(error)
 
