@@ -50,7 +50,7 @@ class Chat:
         if len(self.users) != 0:
             self.users = self.users[0]
 
-        schedule.every().day.at("8:30").do(choice_slave_from_db, self.chat_id)
+        schedule.every().day.at("09:30").do(choice_slave_from_db, self.chat_id)
 
         thread = threading.Thread(target=self._schledule_choice_slave)
         thread.start()
