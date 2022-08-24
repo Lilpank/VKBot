@@ -31,8 +31,8 @@ def main():
         chats = db.select_data("SELECT id_chat from chats")
         if len(chats) != 0:
             for room_id in chats:
-                rooms_dict[int(room_id[0])] = chat.Chat(room_id[0], db)
                 logging.info(f"Create chat with id: {int(room_id[0])}")
+                rooms_dict[int(room_id[0])] = chat.Chat(room_id[0], db)
 
         for event in longpoll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
@@ -40,8 +40,8 @@ def main():
 
                 if chat_id not in rooms_dict:
                     try:
-                        rooms_dict[chat_id] = chat.Chat(event.chat_id, db)
                         logging.info(f"Create the room with chat_id: {chat_id}")
+                        rooms_dict[chat_id] = chat.Chat(event.chat_id, db)
                     except Exception as err:
                         logging.error(err)
                 else:
@@ -53,6 +53,10 @@ def main():
 
                     user_id = event.object.message['from_id']
                     rooms_dict[chat_id].save_userid_in_db(user_id)
+
+                    if msg == 'statistics':
+                        rooms_dict[chat_id].get_statics()
+
     except Exception as error:
         logging.error(error)
 

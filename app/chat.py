@@ -20,8 +20,8 @@ class Chat:
         if len(self.users) != 0:
             self.users = list(self.users[0])
         scheduler = BackgroundScheduler()
-        # scheduler.add_job(self.choice_master_slave_from_db, 'cron', hour=10)
-        scheduler.add_job(self.choice_master_slave_from_db, 'interval', minutes=1)
+        scheduler.add_job(self.choice_master_slave_from_db, 'cron', hour=10)
+        # scheduler.add_job(self.choice_master_slave_from_db, 'interval', minutes=1)
         scheduler.start()
 
     def save_userid_in_db(self, user_id):
@@ -44,20 +44,31 @@ class Chat:
                     0] + 1
         self.db.update_data(
             f"update participants set count_{sign}='{count}' where user_id='{id}' and id_chat='{self.chat_id}'")
-        logging.info(f"update count_{sign} in table participants with user_id={id}, count={count}")
+        logging.info(f"update count_{sign} in table participants with user_id={id}, count_{sign}={count}")
         vk_bot.sender(f'@id{id}, {sign} дня ♂️♂️♂️ ', self.chat_id)
 
     def choice_master_slave_from_db(self):
         users_id = list(
-            self.db.select_data(f"select distinct user_id from participants where id_chat='{self.chat_id}'")[0])
+            self.db.select_data(f"select distinct user_id from participants where id_chat='{self.chat_id}'"))
         if len(users_id) == 0:
             return
         slave_id = random.choice(users_id)
 
-        self.update_count_in_db(slave_id, 'slave')
+        self.update_count_in_db(int(slave_id[0]), 'slave')
         users_id.remove(slave_id)
         if len(users_id) == 0:
             return
 
         master_id = random.choice(users_id)[0]
-        self.update_count_in_db(master_id, 'master')
+        self.update_count_in_db(int(master_id), 'master')
+
+    def get_statics(self):
+        data = self.db.select_data(
+            f"select 'Master' as name, user_id, count_master as val  from participants p where id_chat={self.chat_id} "
+            f"and count_master > count_slave union all select 'Slave' as name, user_id, count_slave as val "
+            f" from participants p where id_chat={self.chat_id} and count_slave > count_master;")
+
+        vk_bot.sender("♂️♂️♂Statistics this chat ♂️♂️♂", self.chat_id)
+        for str in data:
+            logging.info(str)
+            vk_bot.sender(f'{str[0]} @id{str[1]}: {str[2]}', self.chat_id)
