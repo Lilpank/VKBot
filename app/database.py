@@ -15,7 +15,8 @@ class Database:
                                          (ID SERIAL PRIMARY KEY  NOT NULL,
                                          id_chat         INT     NOT NULL,
                                          user_id         INT     NOT NULL,
-                                         count           INT     DEFAULT 0
+                                         count_slave     INT     DEFAULT 0,
+                                         count_master    INT     DEFAULT 0
                                          ); '''
 
     def __init__(self):
