@@ -32,6 +32,7 @@ def main():
         if len(chats) != 0:
             for room_id in chats:
                 rooms_dict[int(room_id[0])] = chat.Chat(room_id[0], db)
+                logging.info(f"Create chat with id: {int(room_id[0])}")
 
         for event in longpoll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:

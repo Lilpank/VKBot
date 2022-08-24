@@ -25,27 +25,33 @@ class Database:
                                            port=PORT,
                                            database=DATABASE)
 
-        self.cursor = self.connection.cursor()
+        cursor = self.connection.cursor()
+        cursor.execute(self.create_table_chats)
+        cursor.execute(self.create_table_participants)
+        self.connection.commit()
+        cursor.close()
 
     def insert_value_into_table(self, query):
-        self.cursor.execute(self.create_table_chats)
-        self.cursor.execute(self.create_table_participants)
-        self.cursor.execute(query)
-
+        cursor = self.connection.cursor()
+        cursor.execute(query)
         self.connection.commit()
+        cursor.close()
 
     def select_data(self, select: str):
         if select is not None:
-            self.cursor.execute(select)
-            return self.cursor.fetchall()
+            cursor = self.connection.cursor()
+            cursor.execute(select)
+            return cursor.fetchall()
 
         raise Exception("Не удалось выполнить sql запрос")
 
     def update_data(self, query: str):
         # if query is not None:
-        self.cursor.execute(query)
+        cursor = self.connection.cursor()
+        cursor.execute(query)
         self.connection.commit()
+        cursor.close()
         # raise Exception("Не удалось выполнить update запрос")
 
     def connection_close(self) -> None:
-        self.cursor.close(), self.connection.close()
+        self.connection.close()
