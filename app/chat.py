@@ -27,8 +27,8 @@ class Chat:
 
         scheduler = BackgroundScheduler()
 
-        # scheduler.add_job(self.choice_slave_from_db, 'cron', hour=18, minute=24)
-        scheduler.add_job(self.choice_slave_from_db, 'interval', minutes=1)
+        # scheduler.add_job(self.choice_slave_from_db, 'cron', hour=10)
+        scheduler.add_job(self.choice_slave_from_db, 'interval',  minutes=10)
         scheduler.start()
 
     def save_userid_in_db(self, user_id):
@@ -46,7 +46,10 @@ class Chat:
         return self.chat_id
 
     def choice_slave_from_db(self):
-        users_id = self.db.select_data(f"select distinct user_id from participants where id_chat='{self.chat_id}'")
+        users_id = self.db.select_data(f"select distinct user_id from participants where id_chat='8'")
+        if len(users_id) == 0:
+            return
+
         user_id = random.choice(users_id)[0]
         count = self.db.select_data(
             f"select count from participants where user_id='{user_id}' and id_chat='{self.chat_id}' limit 1")[0][0] + 1
