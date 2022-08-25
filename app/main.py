@@ -54,8 +54,23 @@ def main():
                     user_id = event.object.message['from_id']
                     rooms_dict[chat_id].save_userid_in_db(user_id)
 
-                    if msg == 'statistics':
+                    if msg == 'performance':
                         rooms_dict[chat_id].get_statics()
+                    # Если у чела есть 300$ он может сделать performance:
+                    # 1: stick finger - Увеличить поле counter_slave  тем самым сделать гаччи-жертву мз выбранного пользователя
+                    # 2: cumming - Самим стать master
+                    if 'stick finger in ass @' in msg:
+                        slave_id = msg[msg.index('@') + 1:]
+                        logging.info(f"user_id: {user_id} stick finger in ass {slave_id}")
+                        rooms_dict[chat_id].make_performance(slave_id=slave_id, performance='stick')
+                    # cumming in
+                    elif 'cumming in @' in msg:
+                        slave_id = msg[msg.index('@') + 1:]
+                        logging.info(f"user_id: {user_id} cumming in {slave_id}")
+                        rooms_dict[chat_id].make_performance(slave_id=slave_id, performance='cumming',
+                                                             master_id=user_id)
+                    elif 'кабачок' in msg:
+                        rooms_dict[chat_id].get_len_dick()
 
     except Exception as error:
         logging.error(error)

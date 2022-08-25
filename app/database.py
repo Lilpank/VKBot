@@ -16,7 +16,8 @@ class Database:
                                          id_chat         INT     NOT NULL,
                                          user_id         INT     NOT NULL,
                                          count_slave     INT     DEFAULT 0,
-                                         count_master    INT     DEFAULT 0
+                                         count_master    INT     DEFAULT 0,
+                                         bucks           INT     DEFAULT 0
                                          ); '''
 
     def __init__(self):
