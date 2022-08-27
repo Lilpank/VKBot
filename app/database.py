@@ -19,6 +19,12 @@ class Database:
                                          count_master    INT     DEFAULT 0,
                                          bucks           INT     DEFAULT 0
                                          ); '''
+    create_table_names = '''
+                CREATE TABLE IF NOT EXISTS names
+                (ID SERIAL PRIMARY KEY NOT NULL,
+                user_id          INT     UNIQUE,
+                name             TEXT    UNIQUE
+                ); '''
 
     def __init__(self):
         self.connection = psycopg2.connect(user=USER,
@@ -30,6 +36,7 @@ class Database:
         cursor = self.connection.cursor()
         cursor.execute(self.create_table_chats)
         cursor.execute(self.create_table_participants)
+        cursor.execute(self.create_table_names)
         self.connection.commit()
         cursor.close()
 

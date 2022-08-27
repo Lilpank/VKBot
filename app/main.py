@@ -51,32 +51,37 @@ def main():
                 if event.from_chat:
                     msg = event.object.message['text'].lower()
                     logging.info(f'User send info - {msg}')
-
                     user_id = event.object.message['from_id']
                     rooms_dict[chat_id].save_userid_in_db(user_id)
 
                     if msg == 'performance':
                         rooms_dict[chat_id].get_statics()
+
                     # Если у чела есть 300$ он может сделать performance:
                     # 1: stick finger - Увеличить поле counter_slave  тем самым сделать гаччи-жертву мз выбранного пользователя
                     # 2: cumming - Самим стать master
-                    if 'stick finger in ass @' in msg:
-                        slave_id = msg[msg.index('@') + 1:]
-                        logging.info(f"user_id: {user_id} stick finger in ass {slave_id}")
-                        rooms_dict[chat_id].make_performance(user_id, slave_id=slave_id, performance='stick')
+                    if 'stick finger in ass [id' in msg:
+                        _performance('stick', msg, user_id, chat_id)
 
-                    elif 'cumming in @' in msg:
-                        slave_id = msg[msg.index('@') + 1:]
-                        logging.info(f"user_id: {user_id} cumming in {slave_id}")
-                        if user_id == int(slave_id):
-                            vk_bot.sender(f'Ты че ебанулся чтоли ты в себя кончил', chat_id)
-                        else:
-                            rooms_dict[chat_id].make_performance(user_id, slave_id=slave_id, performance='cumming')
+                    elif 'cumming in [id' in msg:
+                        _performance('cumming', msg, user_id, chat_id)
                     elif 'кабачок' in msg:
                         rooms_dict[chat_id].get_len_dick()
 
     except Exception as error:
         logging.error(error)
+
+
+def _performance(command, msg, user_id, chat_id):
+    slave_id = msg[msg.index('[id') + 3:msg.index('|')]
+    logging.info(f"user_id: {user_id} making performance in {slave_id}")
+
+    if user_id == int(slave_id) and command == 'stick':
+        vk_bot.sender(f'Ты че ебобо в себя совать кабачок', chat_id)
+    elif user_id == int(slave_id) and command == 'cumming':
+        vk_bot.sender(f'Ты че ебанулся чтоли ты в себя кончил', chat_id)
+
+    rooms_dict[chat_id].make_performance(user_id, slave_id=slave_id, performance=command)
 
 
 if __name__ == '__main__':

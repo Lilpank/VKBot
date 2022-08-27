@@ -25,7 +25,8 @@ class Chat:
 
         scheduler = BackgroundScheduler()
         scheduler.add_job(self.choice_master_and_slave_from_db, 'cron', hour=10)
-        # scheduler.add_job(self.choice_master_slave_from_db, 'interval', minutes=1)
+        # scheduler.add_job(self.choice_master_and_slave_from_db, 'interval', minutes=1)
+        # self.choice_master_and_slave_from_db()
         scheduler.add_job(self.create_metrics, 'interval', minutes=10)
         scheduler.start()
 
@@ -36,6 +37,12 @@ class Chat:
             self.users.append(user_id)
             self.db.insert_value_into_table(
                 f"INSERT INTO participants(id_chat, user_id) values('{self.chat_id}', '{user_id}')")
+
+            self.db.insert_value_into_table(
+                f"INSERT INTO names(user_id, name) values('{user_id}', '{vk_bot.get_name_from_id(user_id)}')"
+                f"ON CONFLICT (name)"
+                f"DO NOTHING")
+
             logging.info(f'user_id: {user_id} insert into database')
         else:
             logging.info(f'user_id: {user_id} exists in db')
@@ -68,18 +75,23 @@ class Chat:
             users = self.assigned_master_or_slave(users)
 
     def assigned_master_or_slave(self, users):
+        if len(users) == 0:
+            self.create_metrics()
+            return
         jabroni_id = random.choice(users)
         self.update_count_in_db(jabroni_id, random.choice(['slave', 'master']))
+        vk_bot.sender(f'Jabroni: {jabroni_id}', self.chat_id)
         users.remove(jabroni_id)
         return users
 
     def create_metrics(self):
         self.metrics = self.db.select_data(
-            f"select 'Master' as name, user_id, count_master as val, bucks  from participants p where id_chat={self.chat_id} "
-            f"and count_master > count_slave union all select 'Slave' as name, user_id, count_slave as val, bucks "
-            f" from participants p where id_chat={self.chat_id} and count_slave > count_master;")
+            f" select 'Master' as alias, name,  bucks  from participants p, names m"
+            f" where id_chat={self.chat_id} and p.user_id=m.user_id and count_master > count_slave "
+            f" union all select 'Slave' as alias, name, bucks "
+            f" from participants p, names m where id_chat={self.chat_id} "
+            f" and count_slave > count_master and p.user_id=m.user_id;")
 
-    # TODO: Мне не нравится, что в статистике тегает, это может действовать пользователям на нервы
     def get_statics(self):
         self.create_metrics()
         if self.metrics is None or len(self.metrics) == 0:
@@ -90,10 +102,9 @@ class Chat:
         vk_bot.sender("Performance this dungeon", self.chat_id)
 
         for metric in self.metrics:
-            vk_bot.sender(f'{metric[0]} @id{metric[1]}: have {metric[3]}$ ', self.chat_id)
+            vk_bot.sender(f'{metric[0]} {metric[1]}: have {metric[2]}$ ', self.chat_id)
 
     def make_performance(self, user_id, slave_id, performance):
-        logging.info(f'users: {self.users}')
         if int(slave_id) not in self.users:
             logging.info(f"{slave_id} not in dungeon")
             vk_bot.sender(f'{slave_id} not in dungeon', self.chat_id)
@@ -108,6 +119,7 @@ class Chat:
             return
 
         bucks -= 300
+
         self.db.update_data(
             f"UPDATE participants "
             f"SET bucks='{bucks}' "
