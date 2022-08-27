@@ -44,16 +44,17 @@ class Database:
             cursor = self.connection.cursor()
             cursor.execute(select)
             return cursor.fetchall()
-
-        raise Exception("Не удалось выполнить sql запрос")
+        else:
+            raise Exception("Не удалось выполнить sql запрос")
 
     def update_data(self, query: str):
-        # if query is not None:
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        self.connection.commit()
-        cursor.close()
-        # raise Exception("Не удалось выполнить update запрос")
+        if query is not None:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            self.connection.commit()
+            cursor.close()
+        else:
+            raise Exception("Не удалось выполнить update запрос")
 
     def connection_close(self) -> None:
         self.connection.close()

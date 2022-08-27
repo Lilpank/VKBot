@@ -4,6 +4,7 @@ import chat
 from database import Database
 from config import VK_SESSION, ID_BOT
 import time
+import vk_bot
 
 logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.INFO,
                     datefmt="%H:%M:%S")
@@ -62,13 +63,15 @@ def main():
                     if 'stick finger in ass @' in msg:
                         slave_id = msg[msg.index('@') + 1:]
                         logging.info(f"user_id: {user_id} stick finger in ass {slave_id}")
-                        rooms_dict[chat_id].make_performance(slave_id=slave_id, performance='stick')
-                    # cumming in
+                        rooms_dict[chat_id].make_performance(user_id, slave_id=slave_id, performance='stick')
+
                     elif 'cumming in @' in msg:
                         slave_id = msg[msg.index('@') + 1:]
                         logging.info(f"user_id: {user_id} cumming in {slave_id}")
-                        rooms_dict[chat_id].make_performance(slave_id=slave_id, performance='cumming',
-                                                             master_id=user_id)
+                        if user_id == int(slave_id):
+                            vk_bot.sender(f'Ты че ебанулся чтоли ты в себя кончил', chat_id)
+                        else:
+                            rooms_dict[chat_id].make_performance(user_id, slave_id=slave_id, performance='cumming')
                     elif 'кабачок' in msg:
                         rooms_dict[chat_id].get_len_dick()
 
