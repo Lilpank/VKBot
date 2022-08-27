@@ -24,8 +24,8 @@ class Chat:
             self.users = list(itertools.chain(*self.users))
 
         scheduler = BackgroundScheduler()
-        scheduler.add_job(self.choice_master_and_slave_from_db, 'cron', hour=10)
-        # scheduler.add_job(self.choice_master_and_slave_from_db, 'interval', minutes=1)
+        # scheduler.add_job(self.choice_master_and_slave_from_db, 'cron', hour=10)
+        scheduler.add_job(self.choice_master_and_slave_from_db, 'interval', minutes=10)
         # self.choice_master_and_slave_from_db()
         scheduler.add_job(self.create_metrics, 'interval', minutes=10)
         scheduler.start()
@@ -34,6 +34,11 @@ class Chat:
 
     def save_userid_in_db(self, user_id):
         if user_id not in self.users:
+            vk_bot.sender(f'Привет, ты попал в игру MasterAndSlave, '
+                          f' Ты можешь выполнить команду "cumming in @[тегнуть игрока]", чтобы стать master'
+                          f' или можешь выполнить команду "stick finger in ass @[тегнуть игрока]", чтобы игрока сделать slave',
+                          self.chat_id)
+
             self.users.append(user_id)
             self.db.insert_value_into_table(
                 f"INSERT INTO participants(id_chat, user_id) values('{self.chat_id}', '{user_id}')")
@@ -80,8 +85,9 @@ class Chat:
             return
         jabroni_id = random.choice(users)
         self.update_count_in_db(jabroni_id, random.choice(['slave', 'master']))
-        vk_bot.sender(f'Jabroni: {jabroni_id}', self.chat_id)
         users.remove(jabroni_id)
+
+        vk_bot.sender(f'Jabroni: {jabroni_id}', self.chat_id)
         return users
 
     def create_metrics(self):
@@ -106,7 +112,6 @@ class Chat:
 
     def make_performance(self, user_id, slave_id, performance):
         if int(slave_id) not in self.users:
-            logging.info(f"{slave_id} not in dungeon")
             vk_bot.sender(f'{slave_id} not in dungeon', self.chat_id)
             return
 
@@ -114,7 +119,6 @@ class Chat:
             f"select bucks from participants where id_chat={self.chat_id} and user_id={user_id}")[0][0]
 
         if bucks < 300:
-            logging.info("Недостаточно bucks для performance $$$")
             vk_bot.sender(f'Недостаточно bucks для performance $$$', self.chat_id)
             return
 
