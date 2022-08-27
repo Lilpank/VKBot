@@ -24,7 +24,7 @@ class Chat:
             self.users = list(itertools.chain(*self.users))
 
         scheduler = BackgroundScheduler()
-        scheduler.add_job(self.choice_master_slave_from_db, 'cron', hour=10)
+        scheduler.add_job(self.choice_master_and_slave_from_db, 'cron', hour=10)
         # scheduler.add_job(self.choice_master_slave_from_db, 'interval', minutes=1)
         scheduler.add_job(self.create_metrics, 'interval', minutes=10)
         scheduler.start()
@@ -55,26 +55,23 @@ class Chat:
 
         logging.info(f"update count_{sign} in table participants with user_id={artist_id}, count_{sign}={count}")
 
-    def choice_master_slave_from_db(self):
+    def choice_master_and_slave_from_db(self):
         users = list(
             self.db.select_data(f"select distinct user_id from participants where id_chat='{self.chat_id}'"))
         users = list(itertools.chain(*users))
 
         while True:
             if len(users) == 0:
-                return
-            slave_id = random.choice(users)
-
-            logging.info(f'slave_id {slave_id}, {type(slave_id)}')
-            self.update_count_in_db(slave_id, 'slave')
-
-            users.remove(slave_id)
-            if len(users) == 0:
+                self.create_metrics()
                 return
 
-            master_id = random.choice(users)
-            self.update_count_in_db(int(master_id), 'master')
-            users.remove(master_id)
+            users = self.assigned_master_or_slave(users)
+
+    def assigned_master_or_slave(self, users):
+        jabroni_id = random.choice(users)
+        self.update_count_in_db(jabroni_id, random.choice(['slave', 'master']))
+        users.remove(jabroni_id)
+        return users
 
     def create_metrics(self):
         self.metrics = self.db.select_data(
