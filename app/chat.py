@@ -127,13 +127,13 @@ class Chat:
         match performance:
             case 'stick':
                 vk_bot.sender(
-                    f"@id{user_id} засунул свой ♂finger♂ в ♂ass♂ @id{slave_id}. {' '.join(self.get_name_from_names(user_id)[0])} получает +1 очко master.",
+                    f"@id{user_id} засунул свой ♂finger♂ в ♂ass♂ @id{slave_id}.  Jabroni {' '.join(self.get_name_from_names(slave_id)[0])} получает +1 очко slave.",
                     self.chat_id)
                 self.update_count_in_db(slave_id, 'slave')
 
             case 'cumming':
                 vk_bot.sender(
-                    f"@id{user_id} ♂cumming♂ в @id{slave_id}. Jabroni {' '.join(self.get_name_from_names(slave_id)[0])} получает +1 очко slave.",
+                    f"@id{user_id} ♂cumming♂ в @id{slave_id}. {' '.join(self.get_name_from_names(user_id)[0])} получает +1 очко master. ",
                     self.chat_id)
                 self.update_count_in_db(user_id, 'master')
 
