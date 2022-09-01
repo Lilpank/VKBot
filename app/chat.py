@@ -24,21 +24,11 @@ class Chat:
             self.users = list(itertools.chain(*self.users))
 
         scheduler = BackgroundScheduler()
-        # scheduler.add_job(self.choice_master_and_slave_from_db, 'cron', hour=10)
-        scheduler.add_job(self.choice_master_and_slave_from_db, 'interval', minutes=10)
-        # self.choice_master_and_slave_from_db()
-        scheduler.add_job(self.create_metrics, 'interval', minutes=10)
+        scheduler.add_job(self.choice_master_and_slave_from_db, 'cron', hour=10)
         scheduler.start()
-
-        # self.get_statics()
 
     def save_userid_in_db(self, user_id):
         if user_id not in self.users:
-            vk_bot.sender(f'Привет, ты попал в игру MasterAndSlave, '
-                          f' Ты можешь выполнить команду "cumming in @[тегнуть игрока]", чтобы стать master'
-                          f' или можешь выполнить команду "stick finger in ass @[тегнуть игрока]", чтобы игрока сделать slave',
-                          self.chat_id)
-
             self.users.append(user_id)
             self.db.insert_value_into_table(
                 f"INSERT INTO participants(id_chat, user_id) values('{self.chat_id}', '{user_id}')")
@@ -57,6 +47,9 @@ class Chat:
     def get_chat_id(self):
         return self.chat_id
 
+    def get_name_from_names(self, jabroni):
+        return self.db.select_data(f'select name from names where user_id={jabroni}')
+
     def update_count_in_db(self, artist_id, sign, value=1):
         count = self.db.select_data(
             f"select count_{sign} from participants where user_id='{artist_id}' and id_chat='{self.chat_id}' limit 1")[
@@ -65,38 +58,37 @@ class Chat:
         self.db.update_data(
             f"update participants set count_{sign}='{count}' where user_id='{artist_id}' and id_chat='{self.chat_id}'")
 
-        logging.info(f"update count_{sign} in table participants with user_id={artist_id}, count_{sign}={count}")
-
     def choice_master_and_slave_from_db(self):
-        users = list(
-            self.db.select_data(f"select distinct user_id from participants where id_chat='{self.chat_id}'"))
-        users = list(itertools.chain(*users))
+        # users = list(
+        #     self.db.select_data(f"select distinct user_id from participants where id_chat='{self.chat_id}'"))
+        # users = list(itertools.chain(*users))
 
-        while True:
-            if len(users) == 0:
-                self.create_metrics()
-                return
+        self.db.update_data(f'update participants set bucks=bucks+300')
+        self.get_statics()
+        # while True:
+        #     if len(users) == 0:
+        #         self.get_statics()
+        #         return
+        #
+        #     users = self.assigned_master_or_slave(users)
 
-            users = self.assigned_master_or_slave(users)
-
-    def assigned_master_or_slave(self, users):
-        if len(users) == 0:
-            self.create_metrics()
-            return
-        jabroni_id = random.choice(users)
-        self.update_count_in_db(jabroni_id, random.choice(['slave', 'master']))
-        users.remove(jabroni_id)
-
-        vk_bot.sender(f'Jabroni: {jabroni_id}', self.chat_id)
-        return users
+    # def assigned_master_or_slave(self, users):
+    #     if len(users) == 0:
+    #         self.create_metrics()
+    #         return
+    #     jabroni_id = random.choice(users)
+    #     self.update_count_in_db(jabroni_id, random.choice(['slave', 'master']))
+    #     users.remove(jabroni_id)
+    #
+    #     return users
 
     def create_metrics(self):
         self.metrics = self.db.select_data(
-            f" select 'Master' as alias, name,  bucks  from participants p, names m"
+            f" select 'Master' as alias, name,  bucks, count_master, count_slave, m.user_id  from participants p, names m"
             f" where id_chat={self.chat_id} and p.user_id=m.user_id and count_master > count_slave "
-            f" union all select 'Slave' as alias, name, bucks "
+            f" union all select 'Slave' as alias, name, bucks, count_master, count_slave, m.user_id "
             f" from participants p, names m where id_chat={self.chat_id} "
-            f" and count_slave > count_master and p.user_id=m.user_id;")
+            f" and count_slave >= count_master and p.user_id=m.user_id;")
 
     def get_statics(self):
         self.create_metrics()
@@ -108,11 +100,13 @@ class Chat:
         vk_bot.sender("Performance this dungeon", self.chat_id)
 
         for metric in self.metrics:
-            vk_bot.sender(f'{metric[0]} {metric[1]}: have {metric[2]}$ ', self.chat_id)
+            vk_bot.sender(
+                f'{metric[0]} {metric[1]}: have {metric[2]}$,  очко master: {metric[3]}, slave: {metric[4]}',
+                self.chat_id)
 
     def make_performance(self, user_id, slave_id, performance):
         if int(slave_id) not in self.users:
-            vk_bot.sender(f'{slave_id} not in dungeon', self.chat_id)
+            vk_bot.sender(f'{vk_bot.get_name_from_id(slave_id)} not in dungeon', self.chat_id)
             return
 
         bucks = self.db.select_data(
@@ -132,10 +126,18 @@ class Chat:
 
         match performance:
             case 'stick':
+                vk_bot.sender(
+                    f"@id{user_id} засунул свой ♂finger♂ в ♂ass♂ @id{slave_id}. {' '.join(self.get_name_from_names(user_id)[0])} получает +1 очко master.",
+                    self.chat_id)
                 self.update_count_in_db(slave_id, 'slave')
+
             case 'cumming':
+                vk_bot.sender(
+                    f"@id{user_id} ♂cumming♂ в @id{slave_id}. Jabroni {' '.join(self.get_name_from_names(slave_id)[0])} получает +1 очко slave.",
+                    self.chat_id)
                 self.update_count_in_db(user_id, 'master')
+
         self.create_metrics()
 
     def get_len_dick(self):
-        vk_bot.sender(f'your dick is {random.randint(1, 20)} CM', self.chat_id)
+        vk_bot.sender(f'your dick is {random.randint(8, 25)} CM', self.chat_id)

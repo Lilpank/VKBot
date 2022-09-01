@@ -17,7 +17,7 @@ class Database:
                                          user_id         INT     NOT NULL,
                                          count_slave     INT     DEFAULT 0,
                                          count_master    INT     DEFAULT 0,
-                                         bucks           INT     DEFAULT 1000
+                                         bucks           INT     DEFAULT 300
                                          ); '''
     create_table_names = '''
                 CREATE TABLE IF NOT EXISTS names
