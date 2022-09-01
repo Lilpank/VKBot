@@ -68,7 +68,7 @@ def main():
                         _performance('stick', msg, user_id, chat_id)
                     elif 'cumming in [id' in msg:
                         _performance('cumming', msg, user_id, chat_id)
-                    elif 'кабачок' in msg:
+                    elif msg == 'кабачок':
                         rooms_dict[chat_id].get_len_dick()
 
     except Exception as error:
