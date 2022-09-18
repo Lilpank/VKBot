@@ -1,5 +1,6 @@
 import logging
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
+
 import chat
 from database import Database
 from config import VK_SESSION, ID_BOT
@@ -9,8 +10,6 @@ import vk_bot
 logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.INFO,
                     datefmt="%H:%M:%S")
 longpoll = VkBotLongPoll(VK_SESSION, ID_BOT)
-
-rooms_dict = {}
 
 
 def _connection_to_db():
@@ -24,17 +23,17 @@ def _connection_to_db():
     return db
 
 
+rooms_dict = {}
 db = _connection_to_db()
+chats = db.select_data("SELECT id_chat from chats")
+if len(chats) != 0:
+    for room_id in chats:
+        logging.info(f"Create chat with id: {int(room_id[0])}")
+        rooms_dict[int(room_id[0])] = chat.Chat(room_id[0], db)
 
 
 def main():
     try:
-        chats = db.select_data("SELECT id_chat from chats")
-        if len(chats) != 0:
-            for room_id in chats:
-                logging.info(f"Create chat with id: {int(room_id[0])}")
-                rooms_dict[int(room_id[0])] = chat.Chat(room_id[0], db)
-
         for event in longpoll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
                 chat_id = event.chat_id

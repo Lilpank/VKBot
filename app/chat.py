@@ -23,8 +23,10 @@ class Chat:
         if len(self.users) != 0:
             self.users = list(itertools.chain(*self.users))
 
-        scheduler = BackgroundScheduler()
-        scheduler.add_job(self.choice_master_and_slave_from_db, 'cron', hour=10)
+        scheduler = BackgroundScheduler(
+            job_defaults={'misfire_grace_time': 15 * 60},
+        )
+        scheduler.add_job(self.send_money_in_jabroni, 'cron', hour=4)
         scheduler.start()
 
     def save_userid_in_db(self, user_id):
@@ -58,19 +60,24 @@ class Chat:
         self.db.update_data(
             f"update participants set count_{sign}='{count}' where user_id='{artist_id}' and id_chat='{self.chat_id}'")
 
-    def choice_master_and_slave_from_db(self):
-        # users = list(
-        #     self.db.select_data(f"select distinct user_id from participants where id_chat='{self.chat_id}'"))
-        # users = list(itertools.chain(*users))
-
-        self.db.update_data(f'update participants set bucks=bucks+300')
+    def send_money_in_jabroni(self):
+        self.db.update_data(f'update participants set bucks=bucks+300 where id_chat={self.chat_id}')
         self.get_statics()
-        # while True:
-        #     if len(users) == 0:
-        #         self.get_statics()
-        #         return
-        #
-        #     users = self.assigned_master_or_slave(users)
+
+    # Выбор slave and master из списка
+    # def choice_master_and_slave_from_db(self):
+    # users = list(
+    #     self.db.select_data(f"select distinct user_id from participants where id_chat='{self.chat_id}'"))
+    # users = list(itertools.chain(*users))
+
+    # self.db.update_data(f'update participants set bucks=bucks+300')
+    # self.get_statics()
+    # while True:
+    #     if len(users) == 0:
+    #         self.get_statics()
+    #         return
+    #
+    #     users = self.assigned_master_or_slave(users)
 
     # def assigned_master_or_slave(self, users):
     #     if len(users) == 0:
