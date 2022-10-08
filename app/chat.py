@@ -62,6 +62,7 @@ class Chat:
 
     def send_money_in_jabroni(self):
         self.db.update_data(f'update participants set bucks=bucks+300 where id_chat={self.chat_id}')
+        vk_bot.sender('Send +300 bucks in jabroni\'s ', self.chat_id)
         self.get_statics()
 
     # Выбор slave and master из списка

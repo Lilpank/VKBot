@@ -1,11 +1,10 @@
 import logging
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 
-import chat
 from database import Database
 from config import VK_SESSION, ID_BOT
 import time
-import vk_bot
+import chat
 
 logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.INFO,
                     datefmt="%H:%M:%S")
@@ -27,12 +26,14 @@ rooms_dict = {}
 db = _connection_to_db()
 chats = db.select_data("SELECT id_chat from chats")
 if len(chats) != 0:
+
     for room_id in chats:
         logging.info(f"Create chat with id: {int(room_id[0])}")
         rooms_dict[int(room_id[0])] = chat.Chat(room_id[0], db)
 
 
 def main():
+    import vk_bot
     try:
         for event in longpoll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
@@ -75,6 +76,7 @@ def main():
 
 
 def _performance(command, msg, user_id, chat_id):
+    import vk_bot
     slave_id = msg[msg.index('[id') + 3:msg.index('|')]
     logging.info(f"user_id: {user_id} making performance in {slave_id}")
 

@@ -20,14 +20,11 @@ with TelegramClient('sessiongachi', API_ID, API_HASH).start(phone=PHONE, passwor
         try:
             import main
             neural_horo = event.message.message
+
             for room_id in main.rooms_dict.keys():
                 send_message_from_neural_horo(room_id, neural_horo)
         except Exception as e:
             print(e)
-
-if __name__ == '__main__':
-    client.start()
-    client.run_until_disconnected()
 
 
 def sender(text, chat_id):
@@ -37,3 +34,9 @@ def sender(text, chat_id):
 def get_name_from_id(user_id):
     user = VK_SESSION.method("users.get", {"user_ids": user_id})
     return user[0]['first_name'] + ' ' + user[0]['last_name']
+
+
+if __name__ == '__main__':
+    with client:
+        client.start()
+        client.run_until_disconnected()
