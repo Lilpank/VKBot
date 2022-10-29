@@ -1,8 +1,8 @@
 import itertools
 import logging
 import random
+
 from apscheduler.schedulers.background import BackgroundScheduler
-import vk_bot
 
 logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.INFO,
                     datefmt="%H:%M:%S")
@@ -30,6 +30,7 @@ class Chat:
         scheduler.start()
 
     def save_userid_in_db(self, user_id):
+        import vk_bot
         if user_id not in self.users:
             self.users.append(user_id)
             self.db.insert_value_into_table(
@@ -61,6 +62,7 @@ class Chat:
             f"update participants set count_{sign}='{count}' where user_id='{artist_id}' and id_chat='{self.chat_id}'")
 
     def send_money_in_jabroni(self):
+        import vk_bot
         self.db.update_data(f'update participants set bucks=bucks+300 where id_chat={self.chat_id}')
         vk_bot.sender('Send +300 bucks in jabroni\'s ', self.chat_id)
         self.get_statics()
@@ -99,6 +101,7 @@ class Chat:
             f" and count_slave >= count_master and p.user_id=m.user_id;")
 
     def get_statics(self):
+        import vk_bot
         self.create_metrics()
         if self.metrics is None or len(self.metrics) == 0:
             logging.info(f'performance metrics: {self.metrics}')
@@ -113,6 +116,7 @@ class Chat:
                 self.chat_id)
 
     def make_performance(self, user_id, slave_id, performance):
+        import vk_bot
         if int(slave_id) not in self.users:
             vk_bot.sender(f'{vk_bot.get_name_from_id(slave_id)} not in dungeon', self.chat_id)
             return
@@ -148,4 +152,5 @@ class Chat:
         self.create_metrics()
 
     def get_len_dick(self):
+        import vk_bot
         vk_bot.sender(f'your dick is {random.randint(8, 25)} CM', self.chat_id)

@@ -1,8 +1,12 @@
+import asyncio
 import logging
+import threading
+
+from telethon import events, TelegramClient
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 
 from database import Database
-from config import VK_SESSION, ID_BOT
+from config import VK_SESSION, ID_BOT, API_HASH, API_ID
 import time
 import chat
 
@@ -26,7 +30,6 @@ rooms_dict = {}
 db = _connection_to_db()
 chats = db.select_data("SELECT id_chat from chats")
 if len(chats) != 0:
-
     for room_id in chats:
         logging.info(f"Create chat with id: {int(room_id[0])}")
         rooms_dict[int(room_id[0])] = chat.Chat(room_id[0], db)
@@ -34,6 +37,7 @@ if len(chats) != 0:
 
 def main():
     import vk_bot
+
     try:
         for event in longpoll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
@@ -90,5 +94,33 @@ def _performance(command, msg, user_id, chat_id):
     rooms_dict[chat_id].make_performance(user_id, slave_id=slave_id, performance=command)
 
 
+def send_message_from_neural_horo(chat_id, neural_horo):
+    if neural_horo is not None:
+        VK_SESSION.method('messages.send', {'chat_id': chat_id, 'message': neural_horo, 'random_id': 0})
+
+
+async def send_message():
+    loop = asyncio.new_event_loop()
+    client = TelegramClient('sessiongachi', API_ID, API_HASH, loop=loop)
+    await client.start()
+
+    @client.on(events.NewMessage(chats='neural_horo'))
+    async def handler_new_message(event):
+        try:
+            neural_horo = event.message.message
+
+            for room_id in rooms_dict.keys():
+                send_message_from_neural_horo(room_id, neural_horo)
+        except Exception as e:
+            print(e)
+
+    await client.run_until_disconnected()
+
+
+def go():
+    asyncio.run(send_message())
+
+
+threading.Thread(target=go).start()
 if __name__ == '__main__':
     main()
